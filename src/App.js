@@ -19,17 +19,17 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        <Header msg="Sophie!" user="Loreto" />
-        <Router>
+      <Router>
+        <div className="App">
+          <Header msg="Sophie!" user="Loreto" />
           <switch>
             <Route exact path="/" component={BookList} />
             <Route exact path="/new" component={NewBook} />
             <Route path="/:book/edit" component={NewBook} />
             <Route path="/:book" component={NewBook} />
           </switch>
-        </Router>
-      </div>
+        </div>
+      </Router>
     );
   }
 }
@@ -39,7 +39,7 @@ const Header = (props)=> {
   return (
     <header>
       <ul>
-        <a href="/">Go Home</a> | <a href="/new">New Book</a>
+        <Link to="/">Go Home</Link> | <Link to="/new">New Book</Link>
       </ul>
     </header>
   )
