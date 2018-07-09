@@ -1,4 +1,3 @@
-import FBUtil from "./FBUtil";
 import _ from "lodash";
 let firebase = require("firebase");
 
@@ -9,6 +8,9 @@ const dbtools = {
 
 
   init: async ()=> {
+    if(!_.isNil(dbtools.fireabaseDB))
+      return new Promise((resolve)=>{resolve(dbtools.firebaseDB)});
+
     const config = {
       apiKey: "AIzaSyABX-FP3t9e8QUuLuScL2idUeRaPhoS5ro",
       authDomain: "bookmaker-35d12.firebaseapp.com",
@@ -27,10 +29,12 @@ const dbtools = {
     const init = (resolve, reject)=> {
       const enabled = ()=> {
         console.log("enabled persistence");
+        dbtools.fireabaseDB = db;
         resolve(db);
       }
       const notEnabled = ()=> {
         console.log("failed to enable persistence");
+        dbtools.fireabaseDB = db;
         resolve(db);
       }
 
@@ -45,6 +49,11 @@ const dbtools = {
     // return the maldito database fron initDB
     if(!_.isNil(dbtools.fireabaseDB)) {
       return dbtools.fireabaseDB;
+    }
+
+    if(timeout > 5000) {
+      console.log("taking too long");
+      throw "Timout exceeded connecting to firebase";
     }
 
     const wait = async (t)=>{ 
@@ -69,7 +78,7 @@ const dbtools = {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
       (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     )
-  }
+  },
   /*eslint-enable */
 
 
@@ -112,7 +121,7 @@ const dbtools = {
   findAll(path) {
     return new Promise(
       async (resolve, reject)=>{
-        let db = await FBUtil.connect();
+        let db = await dbtools.connect();
         let t = [];
         db.collection(path).get().then((querySnapshot) => {
           querySnapshot.forEach((doc) => {
@@ -132,7 +141,7 @@ const dbtools = {
       if(!id)
         id = (obj)=>{return obj.id};
 
-      const db = await FBUtil.connect();
+      const db = await dbtools.connect();
       const batch = db.batch();
 
       const err = (e)=>{
@@ -164,7 +173,7 @@ const dbtools = {
       const f = (obj)=>{return obj.id};
       id = id || f;
 
-      const db = await FBUtil.connect();
+      const db = await dbtools.connect();
       const batch = db.batch();
 
       const err = (e)=>{
@@ -195,7 +204,7 @@ const dbtools = {
     if(!id)
       return this.add(path, data);
 
-    let db = await FBUtil.connect();
+    let db = await dbtools.connect();
     data.modified = new Date();
     let ref = db.collection(path).doc(id);
     return new Promise((resolve, reject)=>{
@@ -207,7 +216,7 @@ const dbtools = {
 
 
   async update(path, id, data) {
-    let db = await FBUtil.connect();
+    let db = await dbtools.connect();
     data.modified = new Date();
     let ref = db.collection(path).doc(id);
     return new Promise((resolve, reject)=>{
@@ -218,7 +227,7 @@ const dbtools = {
   },
 
   async add(path, data) {
-    let db = await FBUtil.connect();
+    let db = await dbtools.connect();
     data.created = new Date();
     data.modified = new Date();
     let ref = db.collection(path).doc();
@@ -232,7 +241,7 @@ const dbtools = {
   },
 
   async delete(path, id) {
-    let db = await FBUtil.connect();
+    let db = await dbtools.connect();
     console.log(path);
     console.log(id);
     let ref = db.collection(path).doc(id);
