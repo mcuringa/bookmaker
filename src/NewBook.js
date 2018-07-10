@@ -115,38 +115,56 @@ class NewBook extends React.Component {
             <input type="text" placeholder="Book Title" id="title" value={book.title} onChange={this.handleChange} />
             <input type="text" placeholder="Author Name" id="author" value={book.author} onChange={this.handleChange} />
             <input type="text" placeholder="Illustrator Name" id="illustrator" value={book.illustrator} onChange={this.handleChange} />
-
-            <Button waves='light' className="right" onClick={this.save}>NEXT</Button>
+            <p>Cover Image:  
+            <input type="file" accept="image/png, image/jpeg" id="coverImage" value={book.coverImage} onChange={this.handleChange} />
+            <p>Alternative Text:</p>
+            <input type="text" placeholder="Describe the  cover" name="coverAltText" value={book.coverAltText} onChange={this.handleChange} />
+            </p>
+            <Button waves='light' className="right" onClick={this.save}>NEXT<i class="material-icons">chevron_right</i></Button>
           </div>
         
           <div id="photoUpload">
             <h1>Image Upload</h1>
             <h3>Upload Image:</h3>
-            <input type="file" id="pageImage" name="Image" accept="image/png, img/jpeg" />
+            <input type="file" id="pageImage" name="Image" accept="image/png, img/jpeg" value={book.Image} onChange={this.handleChange} />
             <h3>Alternative Text:</h3>
-            <input type="text" placeholder="describe the image" name="altText" />
-            <Button waves='light' className="right">BACK</Button>
-            <Button waves='light' className="right">NEXT</Button>
+            <input type="text" placeholder="describe the image" name="altText" value={book.altText} onChange={this.handleChange} />
+            <Button waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
+            <Button waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
           </div>
         
           <div id="pageText">
             <h1>Type Text</h1>
-            <input type="text" placeholder="Type in the text on the page" id="text" name="text" />
-            <Button waves='light' className="right">BACK</Button>
-            <Button waves='light' className="right">NEXT</Button>
+            <input type="text" placeholder="Type in the text on the page" id="text" name="text" value={book.text} onChange={this.handleChange} />
+            <Button waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
+            <Button waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
           </div>
         
           <div id="audioRecord">
             <h1>Record Text</h1>
-            <input type="file" accept="audio/*" id="narration" capture="microphone"></input>
-            <Button waves='light' className="right">BACK</Button>
-            <Button waves='light' className="right">NEXT</Button>
+            <row>
+                <Button class="record">RECORD</Button>
+                <Button class="stop">STOP</Button>
+            </row>
+            <row>
+                <article class="clip">
+                    <audio controls></audio>
+                </article>
+            </row>
+            <row>
+                <button class="btn-floating btn-small recordingOK"><i class="material-icons">done</i></button>
+                <button class="btn-floating btn-small recordAgain" ><i class="material-icons">clear</i></button>
+            </row>
+            <row>
+                <Button waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
+                <Button waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
+            </row>
           </div>
         
           <div id="morePages">
             <h1>Add another page?</h1>
-            <Button waves='light' className="right">NOPE, DONE</Button>
-            <Button waves='light' className="right">YES, ADD</Button>
+            <Button waves='light' className="center">NOPE, DONE</Button>
+            <Button waves='light' className="center">YES, ADD</Button>
           </div>
         </form>
       </div>

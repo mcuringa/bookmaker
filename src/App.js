@@ -17,6 +17,25 @@ import BookForm from "./BookForm.js";
 const ComingSoon = (props)=> {
   return <h4>Coming soon!</h4>
 }
+/*
+Some pseudocode? for reading the book. Not sure how to call the DB elements
+
+const ReadBook = (props)=> {
+  return (
+    <row>
+      <img src ='book.Image' alt='book.altText' />
+    </row>
+    <row>
+      <button class="btn-floating btn-small left"><i class="material-icons">chevron_left</i></button>
+      <h3 class='book.text'></h3>
+      //need to add onClick text to speech
+      
+      <button class="btn-floating btn-small right"><i class="material-icons">chevron_right</i></button>
+    </row>
+    //add some way to trigger onload narrator function
+  )
+}
+*/
 
 
 class App extends Component {
