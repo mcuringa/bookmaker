@@ -11,8 +11,12 @@ import {
 } from "react-router-dom";
 
 
-import NewBook from "./NewBook";
-import BookList from "./BookList";
+import {BookList, NewBook} from "./NewBook";
+import BookForm from "./BookForm.js";
+
+const ComingSoon = (props)=> {
+  return <h4>Coming soon!</h4>
+}
 
 
 class App extends Component {
@@ -22,12 +26,12 @@ class App extends Component {
       <Router>
         <div className="App">
           <Header msg="Sophie!" user="Loreto" />
-          <switch>
+          <Switch>
             <Route exact path="/" component={BookList} />
             <Route exact path="/new" component={NewBook} />
-            <Route path="/:book/edit" component={NewBook} />
-            <Route path="/:book" component={NewBook} />
-          </switch>
+            <Route path="/:book/edit" component={BookForm} />
+            <Route path="/:book/read" component={ComingSoon} />
+          </Switch>
         </div>
       </Router>
     );
