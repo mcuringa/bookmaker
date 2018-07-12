@@ -3,8 +3,34 @@ import _ from "lodash";
 import {Link, Redirect} from 'react-router-dom';
 import dbtools from "./dbtools";
 import {Button, Icon} from 'react-materialize';
+import {ReactMic} from 'react-mic';
 
-
+export class Example extends React.Component{
+    constructor(props){
+        super(props);
+        this.state={
+            record:false
+        }
+    }
+    
+    startRecording = () =>{
+        this.setState({
+            record: true
+        });
+        console.log('recording started');
+    }
+    
+    stopRecording = ()=> {
+        this.setState({
+            record: false
+        });
+        console.log('recording stopped');
+    }
+    
+    onStop(recordedBlob){
+        console.log('Now what to do with this recorded blob?', recordedBlob);
+    }
+}
 
 function Book() {
 
@@ -120,7 +146,7 @@ class NewBook extends React.Component {
             <p>Alternative Text:</p>
             <input type="text" placeholder="Describe the  cover" name="coverAltText" value={book.coverAltText} onChange={this.handleChange} />
             </p>
-            <Button waves='light' className="right" onClick={this.save}>NEXT<i class="material-icons">chevron_right</i></Button>
+            <Button type="button" waves='light' className="right" onClick={this.save}>NEXT<i class="material-icons">chevron_right</i></Button>
           </div>
         
           <div id="photoUpload">
@@ -129,42 +155,45 @@ class NewBook extends React.Component {
             <input type="file" id="pageImage" name="Image" accept="image/png, img/jpeg" value={book.Image} onChange={this.handleChange} />
             <h3>Alternative Text:</h3>
             <input type="text" placeholder="describe the image" name="altText" value={book.altText} onChange={this.handleChange} />
-            <Button waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
-            <Button waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
+            <Button type ="button" waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
+            <Button type="button" waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
           </div>
         
           <div id="pageText">
             <h1>Type Text</h1>
             <input type="text" placeholder="Type in the text on the page" id="text" name="text" value={book.text} onChange={this.handleChange} />
-            <Button waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
-            <Button waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
+            <Button type= "button" waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
+            <Button type="button" waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
           </div>
         
           <div id="audioRecord">
             <h1>Record Text</h1>
             <row>
-                <Button class="record">RECORD</Button>
-                <Button class="stop">STOP</Button>
+                <ReactMic
+                record={this.state.record}
+                className="sound-wave"
+                onStop={this.onStop}
+                strokeColor='#000000'
+                backgroundColor='#00AF9E' />
+                <Button type = "button" onTouchTap={this.startRecording}>RECORD</Button>
+                <Button type="button" onTouchTap={this.stopRecording}>STOP</Button>
+            </row>
+            
+            <row>
+                <button type="button" class="btn-floating btn-small recordingOK"><i class="material-icons">done</i></button>
+                <button type="button" class="btn-floating btn-small recordAgain" ><i class="material-icons">clear</i></button>
             </row>
             <row>
-                <article class="clip">
-                    <audio controls></audio>
-                </article>
-            </row>
-            <row>
-                <button class="btn-floating btn-small recordingOK"><i class="material-icons">done</i></button>
-                <button class="btn-floating btn-small recordAgain" ><i class="material-icons">clear</i></button>
-            </row>
-            <row>
-                <Button waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
-                <Button waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
+                <Button type="button" waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
+                <Button type="button" waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
             </row>
           </div>
         
           <div id="morePages">
             <h1>Add another page?</h1>
-            <Button waves='light' className="center">NOPE, DONE</Button>
-            <Button waves='light' className="center">YES, ADD</Button>
+            <Button type="submit" waves='light' className="center">NOPE, DONE</Button>
+
+            <Button type= "button" waves='light' className="center" onClick="window.location.href='#photoUpload'">YES, ADD</Button>
           </div>
         </form>
       </div>
