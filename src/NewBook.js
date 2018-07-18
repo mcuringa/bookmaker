@@ -2,35 +2,19 @@ import React, { Component } from 'react';
 import _ from "lodash";
 import {Link, Redirect} from 'react-router-dom';
 import dbtools from "./dbtools";
-import {Button, Icon} from 'react-materialize';
-import {ReactMic} from 'react-mic';
 
-export class Example extends React.Component{
-    constructor(props){
-        super(props);
-        this.state={
-            record:false
-        }
-    }
-    
-    startRecording = () =>{
-        this.setState({
-            record: true
-        });
-        console.log('recording started');
-    }
-    
-    stopRecording = ()=> {
-        this.setState({
-            record: false
-        });
-        console.log('recording stopped');
-    }
-    
-    onStop(recordedBlob){
-        console.log('Now what to do with this recorded blob?', recordedBlob);
-    }
-}
+import CssBaseline from '@material-ui/core/CssBaseline';
+import Button from '@material-ui/core/Button';
+import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
+import Stepper from '@material-ui/core/Stepper';
+import Step from '@material-ui/core/Step';
+import StepLabel from '@material-ui/core/StepLabel';
+import StepContent from '@material-ui/core/StepContent';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+
+import {ReactMic} from 'react-mic';
 
 function Book() {
 
@@ -76,14 +60,31 @@ const BookItem = (book)=> {
   return (
     <div key={`book_${book.id}`}>
       <em>{book.title}</em>
-      <Link to={`/${book.id}/read`}>[read]</Link> 
+      <Link to={`/${book.id}/read`}>[read]</Link>
       ~ <Link to={`/${book.id}/edit`}>[edit]</Link>
       <hr />
     </div>
   )
 }
+/*
+startRecording = () =>{
+      this.setState({
+          record: true
+      });
+      console.log('recording started');
+  }
 
+stopRecording = ()=> {
+      this.setState({
+          record: false
+      });
+      console.log('recording stopped');
+  }
 
+onStop(recordedBlob){
+      console.log('Now what to do with this recorded blob?', recordedBlob);
+  }
+*/
 
 class NewBook extends React.Component {
   constructor(props) {
@@ -92,7 +93,8 @@ class NewBook extends React.Component {
     this.state = {
       book: new Book(),
       saving: false,
-      saved: false
+      saved: false,
+      record: false
     };
 
     this.handleChange = _.bind(this.handleChange, this);
@@ -122,7 +124,6 @@ class NewBook extends React.Component {
       )
     }
 
-
     if(this.state.saved) {
       return (
         <Redirect
@@ -132,41 +133,74 @@ class NewBook extends React.Component {
       )
     }
 
+    return(
+      <h4>Stepper Element Goes Here </h4>
+        /*VerticalLinearStepper.propTypes = {
+          classes: PropTypes.object,
+        }*/
+    )
+  }
+}
 
-    return (
-      <div className="container">
-        <form onSubmit={this.save}>
-          <div id="bookInfo" className="input-field">
-            <h1>Book Information</h1>
-            <input type="text" placeholder="Book Title" id="title" value={book.title} onChange={this.handleChange} />
-            <input type="text" placeholder="Author Name" id="author" value={book.author} onChange={this.handleChange} />
-            <input type="text" placeholder="Illustrator Name" id="illustrator" value={book.illustrator} onChange={this.handleChange} />
-            <p>Cover Image:  
-            <input type="file" accept="image/png, image/jpeg" id="coverImage" value={book.coverImage} onChange={this.handleChange} />
-            <p>Alternative Text:</p>
-            <input type="text" placeholder="Describe the  cover" name="coverAltText" value={book.coverAltText} onChange={this.handleChange} />
-            </p>
-            <Button type="button" waves='light' className="right" onClick={this.save}>NEXT<i class="material-icons">chevron_right</i></Button>
-          </div>
-        
-          <div id="photoUpload">
+const styles = theme => ({
+  root: {
+    width: '90%',
+  },
+  button: {
+    marginTop: theme.spacing.unit,
+    marginRight: theme.spacing.unit,
+  },
+  actionsContainer: {
+    marginBottom: theme.spacing.unit * 2,
+  },
+  resetContainer: {
+    padding: theme.spacing.unit * 3,
+  },
+});
+
+function getSteps() {
+  return ['Book Information', 'Image Upload', 'Type Text', 'Record Text'];
+}
+
+function getStepContent(step) {
+  switch (step) {
+    case 0:
+      return (
+        <div>
+         <form onSubmit={this.save}>
+                <h1>Book Information</h1>
+                //<input type="text" placeholder="Book Title" id="title" value={book.title} onChange={this.handleChange} />
+                //<input type="text" placeholder="Author Name" id="author" value={book.author} onChange={this.handleChange} />
+                //<input type="text" placeholder="Illustrator Name" id="illustrator" value={book.illustrator} onChange={this.handleChange} />
+                //<input type="file" accept="image/png, image/jpeg" id="coverImage" value={book.coverImage} onChange={this.handleChange} />
+                //<input type="text" placeholder="Describe the  cover" name="coverAltText" value={book.coverAltText} onChange={this.handleChange} />
+           </form>
+        </div>
+      );
+    case 1:
+      return (
+        <div>
+          <form onSubmit={this.save}>
             <h1>Image Upload</h1>
             <h3>Upload Image:</h3>
-            <input type="file" id="pageImage" name="Image" accept="image/png, img/jpeg" value={book.Image} onChange={this.handleChange} />
-            <h3>Alternative Text:</h3>
-            <input type="text" placeholder="describe the image" name="altText" value={book.altText} onChange={this.handleChange} />
-            <Button type ="button" waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
-            <Button type="button" waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
-          </div>
-        
-          <div id="pageText">
+            //<input type="file" id="pageImage" name="Image" accept="image/png, img/jpeg" value={book.Image} onChange={this.handleChange} />
+            //<input type="text" placeholder="describe the image" name="altText" value={book.altText} onChange={this.handleChange} />
+          </form>
+        </div>
+      );
+    case 2:
+      return (
+        <div>
+          <form onSubmit={this.save}>
             <h1>Type Text</h1>
-            <input type="text" placeholder="Type in the text on the page" id="text" name="text" value={book.text} onChange={this.handleChange} />
-            <Button type= "button" waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
-            <Button type="button" waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
-          </div>
-        
-          <div id="audioRecord">
+            //<input type="text" placeholder="Type in the text on the page" id="text" name="text" value={book.text} onChange={this.handleChange} />
+          </form>
+        </div>
+      );
+    case 3:
+      return (
+        <div>
+          <form onSubmit={this.save}>
             <h1>Record Text</h1>
             <row>
                 <ReactMic
@@ -178,28 +212,104 @@ class NewBook extends React.Component {
                 <Button type = "button" onTouchTap={this.startRecording}>RECORD</Button>
                 <Button type="button" onTouchTap={this.stopRecording}>STOP</Button>
             </row>
-            
-            <row>
-                <button type="button" class="btn-floating btn-small recordingOK"><i class="material-icons">done</i></button>
-                <button type="button" class="btn-floating btn-small recordAgain" ><i class="material-icons">clear</i></button>
-            </row>
-            <row>
-                <Button type="button" waves='light' className="left"><i class="material-icons">chevron_left</i>BACK</Button>
-                <Button type="button" waves='light' className="right">NEXT<i class="material-icons">chevron_right</i></Button>
-            </row>
-          </div>
-        
-          <div id="morePages">
-            <h1>Add another page?</h1>
-            <Button type="submit" waves='light' className="center">NOPE, DONE</Button>
-
-            <Button type= "button" waves='light' className="center" onClick="window.location.href='#photoUpload'">YES, ADD</Button>
-          </div>
-        </form>
-      </div>
-
-    )
+          </form>
+        </div>
+      );
+    default:
+      return 'Unknown step';
   }
 }
 
-export { Book, NewBook, BookList };
+class VerticalLinearStepper extends React.Component {
+
+  state = {
+    activeStep: 0,
+  };
+
+  handleNext = () => {
+    this.setState(state => ({
+      activeStep: state.activeStep + 1,
+      button: state.submit
+      //some way to submit the info generated - tried: this.save == syntax error
+    }));
+  };
+
+  handleBack = () => {
+    this.setState(state => ({
+      activeStep: state.activeStep - 1,
+    }));
+  };
+
+  handleReset = () => {
+    this.setState({
+      activeStep: 0,
+    });
+  };
+
+  addPage =() => {
+    this.setState({
+      activeStep:1,
+    });
+  };
+
+  render() {
+    const { classes } = this.props;
+    const steps = getSteps();
+    const { activeStep } = this.state;
+
+    return (
+      <div className={classes.root}>
+        <Stepper activeStep={activeStep} orientation="vertical">
+          {steps.map((label, index) => {
+            return (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+                <StepContent>
+                  <Typography>{getStepContent(index)}</Typography>
+                  <div className={classes.actionsContainer}>
+                    <div>
+                      <Button
+                        disabled={activeStep === 0}
+                        onClick={this.handleBack}
+                        className={classes.button}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={this.handleNext}
+                        className={classes.button}
+                      >
+                        {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                      </Button>
+                    </div>
+                  </div>
+                </StepContent>
+              </Step>
+            );
+          })}
+        </Stepper>
+        {activeStep === steps.length && (
+          <Paper square elevation={0} className={classes.resetContainer}>
+            <Typography>All steps are finished. What Next?</Typography>
+            <Button
+              onClick={this.addPage}
+              className={classes.button}
+              color="primary"
+            >
+              Add Page
+            </Button>
+            <Button onClick={()=> {this.props.history.replace('/')}} className={classes.button}>
+              Done
+            </Button>
+          </Paper>
+        )}
+      </div>
+    );
+  }
+}
+
+
+
+export {Book, NewBook, BookList}

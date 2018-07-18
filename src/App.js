@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import {Button, Icon} from 'react-materialize';
-import {VoicePlayer} from 'react-voice-components';
+import Button from '@material-ui/core/Button';
+
 
 import {
   BrowserRouter as Router,
@@ -12,34 +12,56 @@ import {
   Switch,
 } from "react-router-dom";
 
-import {BookList, NewBook} from "./NewBook";
+import {Book, BookList, NewBook} from "./NewBook";
 import BookForm from "./BookForm.js";
 
 const ComingSoon = (props)=> {
-  return <h4>Coming soon!</h4>
-}
-/*
-
-const ReadBook = (props)=> {
   return (
-    <div>
-        <row>
-          <img src ='book.Image' alt='book.altText' />
-        </row>
-        <row>
-          <button class="btn-floating btn-small left"><i class="material-icons">chevron_left</i></button>
-          <VoicePlayer play text = book.text />
-          <h3 className='book.text'></h3>
-          //need to add onClick text to speech
+      <div>
+        <h4>Book Title Goes Here </h4>
+        <p>Book image goes here</p>
+        <h4>Author Name:</h4>
+        <h4>Illustrator:</h4>
+      </div>
+  )}
 
-          <button class="btn-floating btn-small right"><i class="material-icons">chevron_right</i></button>
-        </row>
-        //add some way to trigger onload narrator function
+//Maybe try using this sample: https://material-ui.com/demos/steppers/#mobile-stepper-text
+const readBook =(props)=> {
+  return (
+    <div className="readBook">
+      <div className="cover"
+        <div className="bookTitle">
+          {props.book.title}
+        </div>
+
+        <img
+          className="coverImage"
+          src={props.book.coverImage}
+          alt={props.book.coverAltText}
+        />
+
+        <div className="author">
+          <h4>Written by: {props.book.author} </h4>
+        </div>
+
+        <div className="illustrator">
+          <h4>Illustrated by: {props.book.illustrator} </h4>
+        </div>
     </div>
+
+    <div className ="Page">
+      <img
+        className="pageImage"
+        src={props.book.Image}
+        alt={props.book.altText}
+      </>
+      <div className="pageText">
+        <h4>{props.book.text}</h4>
+      </div>
+    </div>
+  </div>
   )
 }
-*/
-
 
 class App extends Component {
 
