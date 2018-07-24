@@ -18,15 +18,15 @@ import BookForm from "./BookForm.js";
 const ComingSoon = (props)=> {
   return (
       <div>
-        <h4>Book Title Goes Here </h4>
+        <h4>Book Title Goes Here</h4>
         <p>Book image goes here</p>
         <h4>Author Name:</h4>
         <h4>Illustrator:</h4>
       </div>
-  )}
+)}
 
 //Maybe try using this sample: https://material-ui.com/demos/steppers/#mobile-stepper-text
-const readBook =(props)=> {
+/*const readBook =(props)=> {
   return (
     <div className="readBook">
       <div className="cover"
@@ -62,7 +62,7 @@ const readBook =(props)=> {
   </div>
   )
 }
-
+*/
 class App extends Component {
 
   render() {

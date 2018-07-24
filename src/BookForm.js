@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import _ from "lodash";
 import dbtools from "./dbtools";
 import {Book} from "./NewBook";
-import {Button, Icon} from 'react-materialize';
 
 class BookForm extends React.Component {
   constructor(props) {
@@ -19,7 +18,7 @@ class BookForm extends React.Component {
     this.handleChange = _.bind(this.handleChange, this);
     this.save = _.bind(this.save, this);
     // wait for a 1 sec pause before saving
-    this.save = _.debounce(this.save, 1000); 
+    this.save = _.debounce(this.save, 1000);
   }
 
   componentWillMount() {
@@ -64,14 +63,14 @@ class BookForm extends React.Component {
                 <div>
                 <label htmlFor="coverImage" className="left">Cover Image</label>
                 <img src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b5/HungryCaterpillar.JPG/220px-HungryCaterpillar.JPG"/>
-                <Button className="right"> Update Image</Button>
+                <button className="right"> Update Image</button>
                 </div>
                 <div>
                 <label htmlFor="coverAltText" className="left">Cover Image Description</label>
                 <input type="text" name="coverAltText" value={book.coverAltText} onChange={this.handleChange} />
                 </div>
               </div>
-        
+
               <div className="col s7">
                   <div>
                     <label htmlFor="title" className="left">Title</label>
@@ -89,7 +88,7 @@ class BookForm extends React.Component {
                   </div>
               </div>
           </div>
-        
+
           <div className="row">
             <h4 className="left">Book Pages</h4>
           </div>
@@ -99,13 +98,13 @@ class BookForm extends React.Component {
                 <label htmlFor="pageImage" className="left">Page Image</label>
                 //Placeholder image for now
                 <img src="https://origin2images-rainbowresource.netdna-ssl.com/products/004170i1.jpg" height ="100" width="200"/>
-                <Button className="right"> Update Image</Button>
+                <button className="right"> Update Image</button>
                 </div>
                 <div>
                 <input type="text" placeholder="Describe the image" name="altText" value={book.altText} onChange={this.handleChange} />
                 </div>
             </div>
-        
+
             <div className="col 7">
                 <div>
                 <label htmlFor="text" className="left">Page Text</label>
@@ -118,7 +117,7 @@ class BookForm extends React.Component {
             </div>
         </div>
         <div className="row">
-            <Button className="right" type="submit" onClick={()=> {this.props.history.replace('/')}}>DONE</Button>
+            <button className="right" type="submit" onClick={()=> {this.props.history.replace('/')}}>DONE</button>
         </div>
         </form>
       </div>
