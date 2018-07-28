@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+// import './App.css';
 import {Button, Icon} from 'react-materialize';
-import {VoicePlayer} from 'react-voice-components';
 
 import {
   BrowserRouter as Router,
@@ -12,33 +10,8 @@ import {
   Switch,
 } from "react-router-dom";
 
-import {BookList, NewBook} from "./NewBook";
-import BookForm from "./BookForm.js";
-
-const ComingSoon = (props)=> {
-  return <h4>Coming soon!</h4>
-}
-/*
-
-const ReadBook = (props)=> {
-  return (
-    <div>
-        <row>
-          <img src ='book.Image' alt='book.altText' />
-        </row>
-        <row>
-          <button class="btn-floating btn-small left"><i class="material-icons">chevron_left</i></button>
-          <VoicePlayer play text = book.text />
-          <h3 className='book.text'></h3>
-          //need to add onClick text to speech
-
-          <button class="btn-floating btn-small right"><i class="material-icons">chevron_right</i></button>
-        </row>
-        //add some way to trigger onload narrator function
-    </div>
-  )
-}
-*/
+import {BookEditor} from "./BookEditor";
+import BookList from "./BookList";
 
 
 class App extends Component {
@@ -49,10 +22,11 @@ class App extends Component {
         <div className="App">
           <Header msg="Sophie!" user="Loreto" />
           <Switch>
+            <Route exact path="/new" component={BookEditor} />
+            <Route exact path="/:book/edit" component={BookEditor} />
+            <Route path="/:book/read" component={()=>{"Coming Soon!"}} />
             <Route exact path="/" component={BookList} />
-            <Route exact path="/new" component={NewBook} />
-            <Route path="/:book/edit" component={BookForm} />
-            <Route path="/:book/read" component={ComingSoon} />
+
           </Switch>
         </div>
       </Router>

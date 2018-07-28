@@ -3,7 +3,7 @@ import dbtools from "./dbtools";
 const longTimeout = 1000 * 20;
 
 it("make sure tests are running",()=>{
-  console.log("it tests");
+  console.log("dbtools tests load");
 });
 
 it("connects to firestore",()=> {

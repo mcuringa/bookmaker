@@ -200,25 +200,21 @@ const dbtools = {
 
 
 
-  async save(path, id, data) {
-    if(!id)
+  async save(path, data) {
+    console.log("saving from dbtools");
+    if(!data.id)
       return this.add(path, data);
 
-    let db = await dbtools.connect();
-    data.modified = new Date();
-    let ref = db.collection(path).doc(id);
-    return new Promise((resolve, reject)=>{
-      ref.set(data).then(()=>{
-        resolve(data);
-      });
-    });
+    return this.update(path, data);
   },
 
 
-  async update(path, id, data) {
+  async update(path, data) {
+    console.log("updating from dbtools", `${path}/${data.id}`);
+
     let db = await dbtools.connect();
     data.modified = new Date();
-    let ref = db.collection(path).doc(id);
+    let ref = db.collection(path).doc(data.id);
     return new Promise((resolve, reject)=>{
       ref.update(data).then(()=>{
         resolve(data);
