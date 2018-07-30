@@ -8,7 +8,14 @@ import {
   Switch
 } from "react-router-dom";
 import dbtools from "./dbtools";
-import {Button, Icon} from 'react-materialize';
+import {
+  Button, 
+  Icon, 
+  Card, 
+  Preloader,
+  Collection,
+  CollectionItem
+} from 'react-materialize';
 import {ReactMic} from 'react-mic';
 
 
@@ -24,12 +31,12 @@ function Book() {
   }
 }
 
-function Page(bookId, pageNum) {
+function Page(bookId) {
 
   return {
-    id: pageNum,
+    id: 0,
     bookId: bookId,
-    page: pageNum,
+    pageNum: 0,
     img: "",
     alt: "",
     text: "",
@@ -66,7 +73,7 @@ const SaveButton = (props) => {
   }
 
   return (
-    <Button type="button" waves='light' className="center" onClick={props.onClick}>{props.label}</Button>
+    <Button type="button" waves='light' className="center" onClick={props.onClick}>{props.children}</Button>
   )
 
 }
@@ -80,11 +87,14 @@ class BookForm extends React.Component {
       book: new Book(),
       pages: [],
       saving: false,
-      saved: false
+      saved: false,
+      loading: true
     };
 
     this.handleChange = _.bind(this.handleChange, this);
     this.save = _.bind(this.save, this);
+    this.addPage = _.bind(this.addPage, this);
+    this.updatePage = _.bind(this.updatePage, this);
   }
 
   componentWillMount() {
@@ -93,11 +103,14 @@ class BookForm extends React.Component {
     if(id) {
       const loadBook = (b)=> {this.setState({"book": b});}
       const loadPages = (t)=> {
-        let pages = _.sortBy(t, "pageNum");
+        // let pages = _.keyBy(t, (p)=>p.id);
+        let pages = _.keyBy(t, "id");
+        // let pages = t;
         this.setState({"pages": pages});
       }
-      dbtools.get("/books", id).then(loadBook);
-      dbtools.findAll(`/books/${id}/pages`).then(loadPages);
+      const bookPromise = dbtools.get("/books", id).then(loadBook);
+      const pagesPromise = dbtools.findAll(`/books/${id}/pages`).then(loadPages);
+      Promise.all([bookPromise, pagesPromise]).then(()=>{this.setState({loading: false});});
 
     }
   }
@@ -110,13 +123,18 @@ class BookForm extends React.Component {
     this.setState({book: book});
   }
 
+  updatePage() {
+    console.log("updatePage");
+  }
+
   addPage() {
-    let p = new Page();
-    p.bookId = this.state.book.id;
+    let p = new Page(this.state.book.id);
     if(this.state.pages.length > 0)
       p.id = this.state.pages.length + 1;
     else
       p.id = 1;
+    p.pageNum = p.id;
+    this.setState({currentPage: p});
   }
 
   save() {
@@ -127,11 +145,15 @@ class BookForm extends React.Component {
   }
 
   render() {
-    const book = this.state.book;
+    if(this.state.loading)
+      return (
+        <div className="container text-center">
+          <Preloader />
+          <p>Loading book...</p>
+        </div>
+      )
 
-    if(this.state.currentPage) {
-      return <PageForm page={this.state.currentPage} updatePage={this.updatePage} />
-    }
+    const book = this.state.book;
 
     return (
       <div className="container">
@@ -150,9 +172,18 @@ class BookForm extends React.Component {
             <label htmlFor="illustrator" className="left">Illustrator Name</label>
             <input type="text" id="illustrator" value={book.illustrator} onChange={this.handleChange} />
           </div>
-          <SaveButton onClick={this.save} saving={this.state.saving} label="Save Book" /> 
-          <SaveButton onClick={this.addPage} saving={this.state.saving} savingLabel="-" label="Add Page" />
+          <SaveButton onClick={this.save} saving={this.state.saving}>Save Book</SaveButton>
+          <SaveButton onClick={this.addPage} saving={this.state.saving} savingLabel="---  ---">Add Page</SaveButton>
         </form>
+
+        <PageForm book={this.state.book} 
+          pages={this.state.pages} 
+          page={this.state.currentPage} 
+          addPage={this.addPage}
+          closePage={()=>{this.setState({currentPage: null})}}
+          updatePage={this.updatePage} />
+
+        <PageList pages={this.state.pages} />
 
       </div>
 
@@ -161,36 +192,39 @@ class BookForm extends React.Component {
 }
 
 
+const PageList = (props)=> {
+  const pages = _.sortBy(props.pages, "id");
+  const Page = (p)=> {
+
+    return (
+      <CollectionItem>
+        page {p.pageNum}
+      </CollectionItem>
+    )
+  } 
+
+  const pageItems = _.map(pages, Page);
+  return (
+    <Collection>{pageItems}</Collection>
+  )
+}
+
 class PageForm extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       saving: false,
-      saved: false,
-      page: this.props.page
+      saved: false
     };
 
     this.handleChange = _.bind(this.handleChange, this);
     this.save = _.bind(this.save, this);
   }
 
-  foo() {
-    const bookId = this.props.match.params.book;
-    const pageId = this.props.match.params.page;
-    const loadBook = (b)=> {this.setState({"book": b});}
-    dbtools.get("/books", bookId).then(loadBook);
-
-    const editPage = (p)=> { this.setState({"page": p}); }
-    const newPage = ()=> {
-      let p = new Page();
-      p.bookId = bookId;
-      p.pageNum = 1;
-      this.setState({"page": p});
-    }
-
-    dbtools.get(`/books/${bookId}/pages`, pageId).then(editPage, newPage);
-
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if(prevProps.page !== this.props.page)
+      this.setState({"page": this.props.page});
   }
 
   handleChange(e) {
@@ -199,13 +233,19 @@ class PageForm extends React.Component {
     page[e.target.id] = e.target.value;
 
     this.setState({page: page});
+
   }
 
-  save() {
+  save(add) {
     this.setState({saving: true});
     const done = (p)=>{
       this.setState({page: p, saving: false, saved: true});
       this.props.updatePage(this.state.page);
+      if(this.add)
+        this.props.addPage();
+      else
+        this.props.closePage();
+
 
     };
     dbtools.save(`/books/${this.state.page.bookId}/pages`, this.state.page).then(done);
@@ -213,40 +253,42 @@ class PageForm extends React.Component {
 
   render() {
     const page = this.state.page;
-    
+    console.log("book page", this.state.page);
     if(_.isNil(page))
       return null;
 
-    return (
-      <div className="container">
-        <form onSubmit={this.save}>
-          <h1><Link to={`/${this.props.book.id}/edit`}>{this.props.book.title}</Link> <small>Page {page.pageNum}</small></h1>
-        
-          <div id="photoUpload">
-            <h1>Image Upload</h1>
-            <h3>Upload Image:</h3>
-            <input type="file" id="pageImage" name="Image" accept="image/png, img/jpeg" value={page.img} onChange={this.handleChange} />
-            <h3>Alternative Text:</h3>
-            <input type="text" placeholder="describe the image" name="altText" value={page.alt} onChange={this.handleChange} />
-            <Button type ="button" waves='light' className="left"><i className="material-icons">chevron_left</i>BACK</Button>
-            <Button type="button" waves='light' className="right">NEXT<i className="material-icons">chevron_right</i></Button>
-          </div>
-        
-          <div id="pageText">
-            <h1>Type Text</h1>
-            <input type="text" placeholder="Type in the text on the page" id="text" name="text" value={page.text} onChange={this.handleChange} />
-            <Button type= "button" waves='light' className="left"><i className="material-icons">chevron_left</i>BACK</Button>
-            <Button type="button" waves='light' className="right">NEXT<i className="material-icons">chevron_right</i></Button>
-          </div>
-        
-          <div id="morePages">
-            <h1>Add another page?</h1>
-            <Button type="submit" waves='light' className="center">NOPE, DONE</Button>
 
-            <Button type= "button" waves='light' className="center">YES, ADD</Button>
+    return (
+      <form onSubmit={this.save}>
+
+        <h1>Page Editor <small>page {page.pageNum}</small></h1>
+        <div>
+          <label htmlFor="pageNum">Page number</label>
+          <input type="text" placeholder="page number" value={page.pageNum} id="pageNum" onChange={this.handleChange} />
+        </div>
+        <Card id="photoUpload" title="Page Image">
+          <label htmlFor="pageImg">
+            Upload the Image:
+          </label>
+          <div>
+            <input type="file" id="pageImage" name="Image" accept="image/png, img/jpeg" value={page.img} onChange={this.handleChange} />
           </div>
-        </form>
-      </div>
+          <div>
+            <label htmlFor="altText">Alternative Text:</label>
+            <input type="text" placeholder="describe the image" name="altText" value={page.alt} onChange={this.handleChange} />
+          </div>
+        </Card>
+      
+        <Card id="pageText" title="Page Text">
+          <textarea placeholder="Type in the text on the page" id="text" style={{height:"10em"}} value={page.text} onChange={this.handleChange} />
+        </Card>
+      
+        <div id="morePages">
+          <div><label>Add another page?</label></div>
+          <SaveButton onClick={this.save} saving={this.state.saving}>NOPE, DONE</SaveButton>
+          <SaveButton onClick={this.save} saving={this.state.saving}>YES, ADD</SaveButton>
+        </div>
+      </form>
 
     )
   }
