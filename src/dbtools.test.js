@@ -13,6 +13,15 @@ it("connects to firestore",()=> {
   });
 });
 
+it.only("finds a unique id", ()=> {
+  dbtools.init();
+  const id = "foo";
+  return dbtools.uniqueId("testing", {title: "Ulysses", author: "James Joyce"})
+  .then((obj)=> {
+    expect(obj).toBe(id);
+  });
+}, longTimeout);
+
 
 it("adding a record", ()=> {
   dbtools.init();
@@ -22,10 +31,20 @@ it("adding a record", ()=> {
   });
 }, longTimeout);
 
+it("adds a record with its own ID", ()=> {
+  dbtools.init();
+  const id = "FooBar";
+  return dbtools.save("testing", {id: id, title: "Diamond Age", author: "Neil Stephenson"})
+  .then((obj)=> {
+    expect(obj).toBeDefined();
+    expect(obj.id).toBe(id);
+  });
+}, longTimeout);
+
 
 it("loads a record", ()=> {
   dbtools.init();
-  const id = "WD3pvC1IP2NXWl9RDi5y";
+  const id = "FooBar";
   return dbtools.get("/books",id).then(
     (book)=> {
       expect(book.title).toBeDefined();
@@ -41,9 +60,9 @@ it("saved a record", ()=> {
     desc: "bar", 
     modified: new Date("2018-07-10T00:31:08.083Z"), 
     title: "zzzz",
-    id: "WD3pvC1IP2NXWl9RDi5y" 
+    id: "FooBar" 
   }
-  return dbtools.save("/books",book.id, book).then(
+  return dbtools.save("/books", book).then(
     (book)=> {
       expect(book.title).toBeDefined();
     });

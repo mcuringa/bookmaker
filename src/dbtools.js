@@ -6,6 +6,48 @@ const dbtools = {
 
   fireabaseDB: null,
 
+  slug(str) {
+    return str.toLowerCase()
+        .replace(/[^\w.\- ]+/g,'')
+        .trim()
+        .replace(/ +/g,'-')
+        .replace(/-+/g,'-');
+  },
+
+  uniqueId: async (path, testId)=> {
+    let db = await dbtools.connect();
+    console.log("got the db for uniqueId: ", `${path}/${testId}`);
+    const conflictLimit = 50;
+    let count = 0;
+    
+    const incrementId = (id, count)=> {
+      console.log("not uqniue, incrementing");
+      return `${testId}_${count}`;
+    };
+
+    const promiseToFindUniqueId = (resolve, reject) => {
+      const checkExists = (id)=> {
+        console.log("checking esistence", count);
+        db.collection(path).doc(id).get().then((ref)=> {
+          console.log("got the ref for id", id);
+          if(!ref.exists) {
+            resolve(id);
+          }
+          else if(count > conflictLimit) {
+            reject();
+          }
+          else {
+            count++;
+            const x = incrementId(id, count);
+            checkExists(x);
+          }
+        });
+      }
+      checkExists(testId);
+    }
+
+    return new Promise(promiseToFindUniqueId);
+  },
 
   init: async ()=> {
     if(!_.isNil(dbtools.fireabaseDB))
@@ -53,7 +95,7 @@ const dbtools = {
 
     if(timeout > 5000) {
       console.log("taking too long");
-      throw "Timout exceeded connecting to firebase";
+      throw "Failed to connect to Firebase: Timout exceeded";
     }
 
     const wait = async (t)=>{ 
@@ -201,22 +243,23 @@ const dbtools = {
 
 
   async save(path, data) {
-    console.log("saving from dbtools");
     if(!data.id)
       return this.add(path, data);
 
     return this.update(path, data);
   },
 
-
   async update(path, data) {
     console.log("updating from dbtools", `${path}/${data.id}`);
+    console.log("data to update", data);
 
     let db = await dbtools.connect();
-    data.modified = new Date();
+    console.log("got the db");
     let ref = db.collection(path).doc(data.id);
+    console.log("got a ref to update", ref);
+    data.modified = new Date();
     return new Promise((resolve, reject)=>{
-      ref.update(data).then(()=>{
+      ref.set(data).then(()=> {
         resolve(data);
       });
     });

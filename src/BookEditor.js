@@ -31,11 +31,10 @@ function Book() {
   }
 }
 
-function Page(bookId) {
+function Page() {
 
   return {
-    id: 0,
-    bookId: bookId,
+    pageOrder: 0,
     pageNum: 0,
     img: "",
     alt: "",
@@ -43,23 +42,6 @@ function Page(bookId) {
     created: new Date(),
     modified: new Date()
   }
-}
-
-
-
-const BookEditor = (props)=> {
-  console.log("book editor", props);
-
-  return (
-    <Router>
-      <Switch>
-        <Route exact path="/new" component={BookForm} />
-        <Route path="/:book/edit" component={BookForm} />
-        <Route path="/:book/page/:page" component={PageForm} />
-      </Switch>
-    </Router>
-  )
-
 }
 
 
@@ -78,40 +60,28 @@ const SaveButton = (props) => {
 
 }
 
-
-class BookForm extends React.Component {
+class BookEditor extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       book: new Book(),
-      pages: [],
       saving: false,
-      saved: false,
       loading: true
     };
 
     this.handleChange = _.bind(this.handleChange, this);
     this.save = _.bind(this.save, this);
-    this.addPage = _.bind(this.addPage, this);
-    this.updatePage = _.bind(this.updatePage, this);
   }
 
   componentWillMount() {
     const id = this.props.match.params.book;
-    console.log("book id", id);
     if(id) {
-      const loadBook = (b)=> {this.setState({"book": b});}
-      const loadPages = (t)=> {
-        // let pages = _.keyBy(t, (p)=>p.id);
-        let pages = _.keyBy(t, "id");
-        // let pages = t;
-        this.setState({"pages": pages});
-      }
-      const bookPromise = dbtools.get("/books", id).then(loadBook);
-      const pagesPromise = dbtools.findAll(`/books/${id}/pages`).then(loadPages);
-      Promise.all([bookPromise, pagesPromise]).then(()=>{this.setState({loading: false});});
-
+      const loadBook = (b)=> {this.setState({loading: false, book: b});}
+      dbtools.get("/books", id).then(loadBook);
+    }
+    else {
+      this.setState({loading: false, book: new Book()});
     }
   }
 
@@ -123,28 +93,38 @@ class BookForm extends React.Component {
     this.setState({book: book});
   }
 
-  updatePage() {
-    console.log("updatePage");
-  }
-
   addPage() {
     let p = new Page(this.state.book.id);
-    if(this.state.pages.length > 0)
-      p.id = this.state.pages.length + 1;
-    else
-      p.id = 1;
-    p.pageNum = p.id;
+    const numPages = _.values(this.state.pages).length;
+    p.pageOrder = p.pageNum = numPages + 1;
     this.setState({currentPage: p});
   }
 
   save() {
-    console.log("Saving...")
     this.setState({saving: true});
-    const done = (book)=>{this.setState({book: book, saving: false, saved: true});};
-    dbtools.save("/books", this.state.book).then(done);
+    
+    let book = this.state.book;
+    const done = (book, isNew)=>{this.setState({book: book, saving: false, newBook: isNew});};
+
+    if(!_.isNil(book.id))
+      dbtools.save("/books", book).then(done);
+    else {
+      const newBook = (id)=> {
+        book.id = id;
+        const redir = (book)=> {done(book, true)};
+        dbtools.save("/books", book).then(redir);
+      }
+      const slug = dbtools.slug(book.title);
+      dbtools.uniqueId("/books", slug).then(newBook);
+    }
   }
 
   render() {
+
+    if(this.state.newBook) {
+      <Redirect to={`/${this.state.book.id}/edit`} />
+    }
+
     if(this.state.loading)
       return (
         <div className="container text-center">
@@ -154,6 +134,7 @@ class BookForm extends React.Component {
       )
 
     const book = this.state.book;
+    const disabled = (this.state.saving)?"disabled":"";
 
     return (
       <div className="container">
@@ -173,18 +154,9 @@ class BookForm extends React.Component {
             <input type="text" id="illustrator" value={book.illustrator} onChange={this.handleChange} />
           </div>
           <SaveButton onClick={this.save} saving={this.state.saving}>Save Book</SaveButton>
-          <SaveButton onClick={this.addPage} saving={this.state.saving} savingLabel="---  ---">Add Page</SaveButton>
+          <Link to={`/${book.id}/edit/page/add`} className={`btn waves-effect waves-light center ${disabled}`}>Add Page</Link>
         </form>
-
-        <PageForm book={this.state.book} 
-          pages={this.state.pages} 
-          page={this.state.currentPage} 
-          addPage={this.addPage}
-          closePage={()=>{this.setState({currentPage: null})}}
-          updatePage={this.updatePage} />
-
-        <PageList pages={this.state.pages} />
-
+        <PageList pages={book.pages} book={book} />
       </div>
 
     )
@@ -193,12 +165,12 @@ class BookForm extends React.Component {
 
 
 const PageList = (props)=> {
-  const pages = _.sortBy(props.pages, "id");
-  const Page = (p)=> {
+  const pages = _.sortBy(props.pages, "pageOrder");
+  const Page = (p, i)=> {
 
     return (
-      <CollectionItem>
-        page {p.pageNum}
+      <CollectionItem key={`page_${i+1}`}>
+        page {i+1} [<Link to={`/${props.book.id}/edit/page/${i+1}`}>edit</Link>]
       </CollectionItem>
     )
   } 
@@ -209,22 +181,53 @@ const PageList = (props)=> {
   )
 }
 
-class PageForm extends React.Component {
+class PageEditor extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
       saving: false,
-      saved: false
+      loading: true
     };
 
     this.handleChange = _.bind(this.handleChange, this);
     this.save = _.bind(this.save, this);
+    this.loadPage = _.bind(this.loadPage, this);
+  }
+
+  loadPage() {
+    const id = this.props.match.params.book;
+    const pageNum = this.props.match.params.page;
+    console.log("mounting page", pageNum);
+    const loadBook = (b)=> {
+      let page;
+      let index = -1;
+      if(pageNum === "add") {
+        page = new Page();
+        index = b.pages.length
+        page.pageNum = index + 1;
+
+      }
+      else if(!_.isNaN(pageNum) && pageNum - 1 < b.pages.length) {
+        index = pageNum -1;
+        page = b.pages[index];
+      }
+      this.setState({loading: false, book: b, page: page, index: index, addPage: false });
+    }
+    dbtools.get("/books", id).then(loadBook);
+
+  }
+
+  componentWillMount() {
+    this.loadPage();
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if(prevProps.page !== this.props.page)
-      this.setState({"page": this.props.page});
+    const pageNum = this.props.match.params.page;
+    const oldPageNum = prevProps.match.params.page;
+
+    if(pageNum !== oldPageNum)
+      this.loadPage();
   }
 
   handleChange(e) {
@@ -238,30 +241,56 @@ class PageForm extends React.Component {
 
   save(add) {
     this.setState({saving: true});
-    const done = (p)=>{
-      this.setState({page: p, saving: false, saved: true});
-      this.props.updatePage(this.state.page);
-      if(this.add)
-        this.props.addPage();
-      else
-        this.props.closePage();
-
-
+    const done = (p)=> {
+      console.log("save page done");
+      const goToBook = !add;
+      this.setState({page: p, saving: false, book: book, addPage: add, done: goToBook});
     };
-    dbtools.save(`/books/${this.state.page.bookId}/pages`, this.state.page).then(done);
+
+    let book = this.state.book;
+    console.log("book id for pages", book.id);
+    const i = this.state.index;
+    if(!book.pages)
+      book.pages = [];
+
+    if(i === -1)
+      book.pages.push(this.state.page);
+    else
+      book.pages[i] = this.state.page;
+    console.log("saving pages", book.pages);
+    dbtools.save("/books", book).then(done);
+
   }
 
   render() {
+
+    if(this.state.addPage) {
+      <Redirect to={`/${this.state.book.id}/edit/page/add`} />
+    }
+
+    if(this.state.done) {
+      <Redirect to={`/${this.state.book.id}/edit`} />
+    }
+
+    if(this.state.loading)
+      return (
+        <div className="container text-center">
+          <Preloader />
+          <p>Loading page...</p>
+        </div>
+      )
+
     const page = this.state.page;
-    console.log("book page", this.state.page);
     if(_.isNil(page))
       return null;
 
+    const add = _.ary(this.save, true);
+    const done = _.ary(this.save, false);
 
     return (
       <form onSubmit={this.save}>
 
-        <h1>Page Editor <small>page {page.pageNum}</small></h1>
+        <h3>{this.state.book.title} <small>page {page.pageNum}</small></h3>
         <div>
           <label htmlFor="pageNum">Page number</label>
           <input type="text" placeholder="page number" value={page.pageNum} id="pageNum" onChange={this.handleChange} />
@@ -285,8 +314,8 @@ class PageForm extends React.Component {
       
         <div id="morePages">
           <div><label>Add another page?</label></div>
-          <SaveButton onClick={this.save} saving={this.state.saving}>NOPE, DONE</SaveButton>
-          <SaveButton onClick={this.save} saving={this.state.saving}>YES, ADD</SaveButton>
+          <SaveButton onClick={done} saving={this.state.saving}>NOPE, DONE</SaveButton>
+          <SaveButton onClick={add} saving={this.state.saving}>YES, ADD</SaveButton>
         </div>
       </form>
 
@@ -296,4 +325,4 @@ class PageForm extends React.Component {
 
 
 
-export { Book, BookEditor };
+export { Book, BookEditor, PageEditor };
