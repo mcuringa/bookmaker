@@ -1,6 +1,6 @@
 import _ from "lodash";
 let firebase = require("firebase");
-
+require("firebase/firestore");
 
 const dbtools = {
 
@@ -52,17 +52,6 @@ const dbtools = {
   init: async ()=> {
     if(!_.isNil(dbtools.fireabaseDB))
       return new Promise((resolve)=>{resolve(dbtools.firebaseDB)});
-
-    const config = {
-      apiKey: "AIzaSyABX-FP3t9e8QUuLuScL2idUeRaPhoS5ro",
-      authDomain: "bookmaker-35d12.firebaseapp.com",
-      databaseURL: "https://bookmaker-35d12.firebaseio.com",
-      projectId: "bookmaker-35d12",
-      storageBucket: "bookmaker-35d12.appspot.com",
-      messagingSenderId: "301271180038"
-    };
-    require("firebase/firestore");
-    firebase.initializeApp(config);
 
     let db = firebase.firestore();
     const settings = { timestampsInSnapshots: true };

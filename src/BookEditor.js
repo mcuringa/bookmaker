@@ -16,8 +16,8 @@ import {
   Collection,
   CollectionItem
 } from 'react-materialize';
-import {ReactMic} from 'react-mic';
 
+import {MediaUpload} from "./MediaManager";
 
 function Book() {
 
@@ -26,6 +26,7 @@ function Book() {
     author: "",
     illustrator: "",
     desc: "",
+    coverImg: "",
     created: new Date(),
     modified: new Date()
   }
@@ -37,6 +38,7 @@ function Page() {
     pageOrder: 0,
     pageNum: 0,
     img: "",
+    storageUrl: "",
     alt: "",
     text: "",
     created: new Date(),
@@ -153,6 +155,7 @@ class BookEditor extends React.Component {
             <label htmlFor="illustrator" className="left">Illustrator Name</label>
             <input type="text" id="illustrator" value={book.illustrator} onChange={this.handleChange} />
           </div>
+          <MediaUpload url={book.coverImg} />
           <SaveButton onClick={this.save} saving={this.state.saving}>Save Book</SaveButton>
           <Link to={`/${book.id}/edit/page/add`} className={`btn waves-effect waves-light center ${disabled}`}>Add Page</Link>
         </form>
